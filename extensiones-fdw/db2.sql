@@ -1,0 +1,15 @@
+CREATE DATABASE db2;
+CREATE ROLE usuario2 WITH LOGIN PASSWORD 'miclave2';
+\c db2
+CREATE SCHEMA esquema2;
+GRANT ALL ON SCHEMA esquema2 TO usuario2;
+GRANT SELECT ON ALL TABLES IN SCHEMA esquema2 TO usuario2;
+ALTER DEFAULT PRIVILEGES IN SCHEMA esquema2 GRANT ALL ON TABLES TO usuario2;
+CREATE TABLE esquema2.tabla2 (id INTEGER PRIMARY KEY, username VARCHAR);
+DO $$DECLARE i INTEGER;
+BEGIN
+    FOR i IN SELECT * FROM generate_series(1, 100)
+    LOOP
+        INSERT INTO esquema2.tabla2 VALUES (i, 'user' || i);
+    END LOOP;
+END$$;

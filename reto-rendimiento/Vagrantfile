@@ -1,0 +1,28 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure("2") do |config|
+  config.vm.box = "opensuse/openSUSE-42.3-x86_64"
+  config.vm.hostname = "reto-rendimiento.example.local"
+  config.vm.provider "virtualbox" do |v|
+    v.name = "reto-rendimiento"
+    # Get disk path
+    line = `VBoxManage list systemproperties | grep "Default machine folder"`
+    vb_machine_folder = line.split(':')[1].strip()
+    # Create and attach second disk
+    second_disk = File.join(vb_machine_folder, v.name, 'disk2.vdi')
+    unless File.exist?(second_disk)
+      v.customize ['createhd', '--filename', second_disk, '--format', 'VDI', '--size', 1024]
+    end
+    v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', second_disk]
+    # Create and attach third disk
+    third_disk = File.join(vb_machine_folder, v.name, 'disk3.vdi')
+    unless File.exist?(third_disk)
+      v.customize ['createhd', '--filename', third_disk, '--format', 'VDI', '--size', 1024]
+    end
+    v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 2, '--device', 0, '--type', 'hdd', '--medium', third_disk]
+  end
+  config.vm.provision "file", source: "ingestar-datos.sh", destination: "/tmp/ingestar-datos.sh"
+  config.vm.provision "shell", inline: 'zypper -q in -y postgresql96 postgresql96-server postgresql96-contrib mdadm'
+  config.vm.provision "shell", inline: 'systemctl enable postgresql'
+  config.vm.provision "shell", inline: 'service postgresql start' 
+end

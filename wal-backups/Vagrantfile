@@ -1,0 +1,10 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure("2") do |config|
+  config.vm.box = "opensuse/openSUSE-42.3-x86_64"
+  config.vm.hostname = "wal-backup.example.local"
+  config.vm.provision "file", source: "ingestar-datos.sh", destination: "/home/vagrant/ingestar-datos.sh"
+  config.vm.provision "shell", inline: 'zypper -q in -y postgresql96 postgresql96-server postgresql96-contrib'
+  config.vm.provision "shell", inline: 'systemctl enable postgresql'
+  config.vm.provision "shell", inline: 'service postgresql start'
+end
